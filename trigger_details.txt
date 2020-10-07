@@ -1,0 +1,69 @@
+﻿TRIGGER 1 ( trigger_1.sql )
+
+
+● This trigger is an insert trigger.
+● When a new record is inserted into the PATIENT table, the trigger is executed
+● When a new record is inserted into the Patient table, the following occurs:
+○ A room in the ROOM table whose Status=’Empty’ is now changed to
+Status=’Filled’ and this room is assigned to the new patient ie entered as a
+record in ROOM_ASSIGNMENTS table (hence a filled room is not
+assigned to the new patient and only a previously empty room is assigned)
+○ A nurse who was not assigned to any patient, is assigned to the new patient.
+This is entered as a record in NURSE_PATIENT_ASSIGNMENT
+○ A cleaner is selected at random, and is assigned to clean the room assigned
+to the new patient. This is entered as a record in the
+CLEANER_ROOM_ASSIGNMENT table
+
+
+TRIGGER 2  ( trigger_2.sql )
+
+
+● This trigger is an update trigger
+● When a patient is leaving the nursing home, the corresponding record in the
+PATIENT table is updated, to set the Date_out as the current date. (ie if the elderly
+patient leaves the patient on 27th of March 2020, the corresponding record is
+updated to set Date_out=’2020-03-27’ )
+● When a patient record in PATIENT is updated to set Date_out=’today’ , the
+following occurs:
+● After the Date_out is updated to the current date, the record must be
+deleted
+● The room that was assigned to the old patient, in the corresponding record
+in the ROOM table, Status is updated to set Status=’Empty’.
+○ The cleaner who was assigned to clean the old patient’s room must no
+longer be assigned to that room as it is now empty. Hence, the
+corresponding record with the appropriate Cleaner_id and Room_id in
+CLEANER_ROOM_ASSIGNMENT is deleted.
+○ However, it is important that all the former patients are audited in a table
+called PATIENT_LOG. This table has the columns,
+Patient_id,Patient_name,Date_in,Date_out.
+○ So when the record in PATIENT table is updated to set Date_out=’today’
+and the record is deleted, the old patient’s Patient_id,Patient_name,Date_in
+and Date_out are inserted into the PATIENT_LOG table.
+
+
+(Note: the records referencing the deleted patient record in PATIENT, in the tables
+NURSE_PATIENT_ASSIGNMENT, BILL,LOCAL_GUARDIAN
+PATIENT_MEDICATION_REQUIREMENTS) are deleted automatically when
+the parent patient record is deleted due to appropriate referential integrity constraints
+
+TRIGGER 3 ( trigger_3.sql )
+
+● The MEDICINE table contains a record for a medicine only when a patient
+in the nursing home needs it to be treated.
+● The DISEASE table contains a record for a disease only when a patient in
+the nursing home suffers from it.
+● The TREATMENTS table contains a record for a medicine and disease only
+when a patient in the nursing home needs that medicine to cure some
+disease.
+● If a patient no longer requires a medicine, the corresponding record in
+PATIENT_MEDICATION_REQUIREMENTS is deleted.
+● When a record in the PATIENT_MEDICATION_REQUIREMENTS is
+deleted, this trigger is executed and the following occurs:
+* If no other patients in the
+PATIENT_MEDICATION_REQUIREMENTS table have Medicine_id =
+OLD.Medicine_id, ie the Medicine_id of the deleted record, then the
+corresponding record of the appropriate Medicine_id in the MEDICINE
+table is deleted and the corresponding record with the appropriate
+Medicine_id in the TREATMENTS table is deleted.
+* If there are no other patients suffering from the disease, the corresponding
+record in the DISEASE table is deleted.
